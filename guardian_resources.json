@@ -1,0 +1,34 @@
+{
+    "emotional_support": {
+        "helpline": "India Mental Health Support: 1800-599-0019",
+        "steps": [
+            "Take 3 slow deep breaths.",
+            "Name 5 things you can see near you.",
+            "You're not alone \u2014 help is available."
+        ]
+    },
+    "medical_emergency": {
+        "helpline": "Ambulance: 102",
+        "steps": [
+            "Check if the person is conscious.",
+            "Call emergency services immediately.",
+            "Stay calm and monitor their breathing."
+        ]
+    },
+    "safety_threat": {
+        "helpline": "Police Emergency Number: 112",
+        "steps": [
+            "Move to a safe and visible public place if possible.",
+            "Avoid confrontation.",
+            "Contact emergency services immediately."
+        ]
+    },
+    "fire_hazard": {
+        "helpline": "Fire & Rescue: 101",
+        "steps": [
+            "Evacuate calmly and quickly.",
+            "Avoid elevators.",
+            "Call emergency services immediately."
+        ]
+    }
+}
