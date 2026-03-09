@@ -82,31 +82,31 @@ Suggest breathing and grounding techniques.
 
 guardian_agent = LlmAgent(
     name="GuardianAI",
-    model="gemini-2.5-pro",
+    model="gemini-2.5-flash",
     instruction=guardian_prompt
 )
 
 fire_agent = LlmAgent(
     name="FireAgent",
-    model="gemini-2.5-pro",
+    model="gemini-2.5-flash",
     instruction=fire_prompt
 )
 
 MedicalAgent = LlmAgent(
     name="MedicalAgent",
-    model="gemini-2.5-pro",
+    model="gemini-2.5-flash",
     instruction=medical_prompt
 )
 
 ThreatAgent = LlmAgent(
     name="ThreatAgent",
-    model="gemini-2.5-pro",
+    model="gemini-2.5-flash",
     instruction=threat_prompt
 )
 
 EmotionalAgent = LlmAgent(
     name="EmotionalAgent",
-    model="gemini-2.5-pro",
+    model="gemini-2.5-flash",
     instruction=emotional_prompt
 )
 
