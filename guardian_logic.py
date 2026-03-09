@@ -4,7 +4,6 @@ import json
 import os
 import time
 import asyncio
-from dotenv import load_dotenv
 
 from google.genai.types import Content, Part
 from google.adk.agents import LlmAgent
@@ -17,13 +16,10 @@ from google.adk.runners import Runner
 # Load API KEY
 # -------------------------------------------------
 
-load_dotenv()
-
 GOOGLE_API_KEY = os.getenv("GOOGLE_API_KEY")
 
 if not GOOGLE_API_KEY:
     raise ValueError("GOOGLE_API_KEY not found in .env file")
-
 
 # -------------------------------------------------
 # Conversation Memory
