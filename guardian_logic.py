@@ -1,13 +1,8 @@
 import json
 import os
 import time
+from functools import lru_cache
 from pathlib import Path
-
-from google.adk.agents import LlmAgent
-from google.adk.apps.app import App
-from google.adk.runners import Runner
-from google.adk.sessions import InMemorySessionService
-from google.genai.types import Content, Part
 
 
 BASE_DIR = Path(__file__).resolve().parent
@@ -49,9 +44,6 @@ def configure_google_api_key():
 
     os.environ["GOOGLE_API_KEY"] = api_key
     return api_key
-
-
-GOOGLE_API_KEY = configure_google_api_key()
 
 
 conversation_log = []
@@ -104,18 +96,15 @@ a crisis helpline, or a trusted nearby person.
 
 
 def create_agent(name, instruction, model=DEFAULT_MODEL):
+    configure_google_api_key()
+
+    from google.adk.agents import LlmAgent
+
     return LlmAgent(
         name=name,
         model=model,
         instruction=instruction,
     )
-
-
-guardian_agent = create_agent("GuardianAI", guardian_prompt)
-fire_agent = create_agent("FireAgent", fire_prompt)
-medical_agent = create_agent("MedicalAgent", medical_prompt)
-threat_agent = create_agent("ThreatAgent", threat_prompt)
-emotional_agent = create_agent("EmotionalAgent", emotional_prompt)
 
 
 def get_emergency_numbers(country):
@@ -138,6 +127,10 @@ def load_crisis_resources():
 
 
 def create_runner(agent):
+    from google.adk.apps.app import App
+    from google.adk.runners import Runner
+    from google.adk.sessions import InMemorySessionService
+
     app = App(
         name=f"{agent.name}_App",
         root_agent=agent,
@@ -149,25 +142,20 @@ def create_runner(agent):
     )
 
 
-guardian_runner = create_runner(guardian_agent)
-fire_runner = create_runner(fire_agent)
-medical_runner = create_runner(medical_agent)
-threat_runner = create_runner(threat_agent)
-emotional_runner = create_runner(emotional_agent)
-
-
-AGENT_RUNNERS = {
-    "fire": fire_runner,
-    "medical": medical_runner,
-    "threat": threat_runner,
-    "emotional": emotional_runner,
-}
-
 AGENT_NAMES = {
+    "unknown": "GuardianAI",
     "fire": "FireAgent",
     "medical": "MedicalAgent",
     "threat": "ThreatAgent",
     "emotional": "EmotionalSupportAgent",
+}
+
+AGENT_PROMPTS = {
+    "unknown": ("GuardianAI", guardian_prompt),
+    "fire": ("FireAgent", fire_prompt),
+    "medical": ("MedicalAgent", medical_prompt),
+    "threat": ("ThreatAgent", threat_prompt),
+    "emotional": ("EmotionalAgent", emotional_prompt),
 }
 
 CATEGORY_KEYWORDS = {
@@ -317,6 +305,8 @@ async def ensure_session(runner, user_id, session_id):
 
 
 async def run_agent(runner, message, user_id, session_id):
+    from google.genai.types import Content, Part
+
     response_text = ""
 
     async for event in runner.run_async(
@@ -332,6 +322,13 @@ async def run_agent(runner, message, user_id, session_id):
     return response_text.strip()
 
 
+@lru_cache(maxsize=None)
+def get_runner(category):
+    agent_name, instruction = AGENT_PROMPTS.get(category, AGENT_PROMPTS["unknown"])
+    agent = create_agent(agent_name, instruction)
+    return create_runner(agent)
+
+
 async def handle_message(
     message,
     forced_agent=None,
@@ -342,7 +339,7 @@ async def handle_message(
     category = forced_agent if forced_agent in SPECIALIZED_CATEGORIES else detect_category(message)
     severity = compute_severity(message, category)
     reason = explain_decision(category)
-    runner_to_use = AGENT_RUNNERS.get(category, guardian_runner)
+    runner_to_use = get_runner(category)
     agent_name = AGENT_NAMES.get(category, "GuardianAI")
 
     await ensure_session(runner_to_use, user_id, session_id)
@@ -370,3 +367,17 @@ I will then close the crisis session.
         "reason": reason,
         "response": f"{response_text}\n\n{help_text}{resolution_prompt}".strip(),
     }
+
+
+def _is_streamlit_runtime():
+    try:
+        from streamlit.runtime.scriptrunner import get_script_run_ctx
+    except Exception:
+        return False
+
+    return get_script_run_ctx() is not None
+
+
+if __name__ == "__main__" and _is_streamlit_runtime():
+    # Compatibility path for Streamlit Cloud apps still pointed at guardian_logic.py.
+    import guardian_app
