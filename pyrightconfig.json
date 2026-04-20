@@ -1,6 +1,7 @@
 {
     "include": [
         "guardian_app.py",
+        "guardian_core.py",
         "guardian_logic.py"
     ],
     "exclude": [

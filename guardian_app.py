@@ -3,25 +3,7 @@ import uuid
 
 import streamlit as st
 
-
-st.set_page_config(page_title="GuardianAI", page_icon="G")
-
-try:
-    from guardian_logic import SPECIALIZED_CATEGORIES, handle_message
-except ImportError as exc:
-    st.error("A required package is missing.")
-    st.info("Check that requirements.txt is committed and Streamlit Cloud finished installing it.")
-    st.code(str(exc))
-    st.stop()
-    raise
-except RuntimeError as exc:
-    st.error(str(exc))
-    st.info(
-        'Add GOOGLE_API_KEY to Streamlit Cloud secrets as GOOGLE_API_KEY = "your-key". '
-        "For local runs, keep it in your ignored .env file."
-    )
-    st.stop()
-    raise
+from guardian_core import SPECIALIZED_CATEGORIES, handle_message
 
 
 RESOLUTION_KEYWORDS = [
@@ -107,44 +89,48 @@ def close_crisis_session():
     st.session_state.last_result = None
 
 
-init_session_state()
+def render_app():
+    st.set_page_config(page_title="GuardianAI", page_icon="G")
+    init_session_state()
 
-st.title("GuardianAI Crisis Assistant")
-st.caption("If this is an immediate emergency, contact local emergency services now.")
+    st.title("GuardianAI Crisis Assistant")
+    st.caption("If this is an immediate emergency, contact local emergency services now.")
 
-with st.sidebar:
-    st.subheader("Session")
-    current_agent = st.session_state.active_agent or "GuardianAI"
-    st.write(f"Active support: {current_agent}")
+    with st.sidebar:
+        st.subheader("Session")
+        current_agent = st.session_state.active_agent or "GuardianAI"
+        st.write(f"Active support: {current_agent}")
 
-    if st.session_state.last_result:
-        st.write(f"Last severity: {st.session_state.last_result['severity']}")
-        st.write(f"Last category: {st.session_state.last_result['category']}")
+        if st.session_state.last_result:
+            st.write(f"Last severity: {st.session_state.last_result['severity']}")
+            st.write(f"Last category: {st.session_state.last_result['category']}")
 
-    st.button("Reset chat", on_click=reset_session, use_container_width=True)
+        st.button("Reset chat", on_click=reset_session, use_container_width=True)
 
-if not st.session_state.messages:
-    with st.chat_message("assistant"):
-        st.markdown(
-            "Tell me what is happening. I will route you to fire, medical, safety, "
-            "or emotional support guidance and keep the steps short."
-        )
+    if not st.session_state.messages:
+        with st.chat_message("assistant"):
+            st.markdown(
+                "Tell me what is happening. I will route you to fire, medical, safety, "
+                "or emotional support guidance and keep the steps short."
+            )
 
-for msg in st.session_state.messages:
-    with st.chat_message(msg["role"]):
-        st.markdown(msg["content"])
+    for msg in st.session_state.messages:
+        with st.chat_message(msg["role"]):
+            st.markdown(msg["content"])
 
-quick_prompt = None
-if not st.session_state.messages:
-    quick_cols = st.columns(len(QUICK_PROMPTS))
-    for column, (label, prompt) in zip(quick_cols, QUICK_PROMPTS.items()):
-        if column.button(label, use_container_width=True):
-            quick_prompt = prompt
+    quick_prompt = None
+    if not st.session_state.messages:
+        quick_cols = st.columns(len(QUICK_PROMPTS))
+        for column, (label, prompt) in zip(quick_cols, QUICK_PROMPTS.items()):
+            if column.button(label, use_container_width=True):
+                quick_prompt = prompt
 
-typed_input = st.chat_input("Describe what is happening...")
-user_input = typed_input or quick_prompt
+    typed_input = st.chat_input("Describe what is happening...")
+    user_input = typed_input or quick_prompt
 
-if user_input:
+    if not user_input:
+        return
+
     with st.chat_message("user"):
         st.markdown(user_input)
 
@@ -162,6 +148,14 @@ if user_input:
     try:
         with st.spinner("GuardianAI is assessing the situation..."):
             result = run_handler(user_input)
+    except RuntimeError as exc:
+        st.error(str(exc))
+        st.info(
+            'Add GOOGLE_API_KEY to Streamlit Cloud secrets as GOOGLE_API_KEY = "your-key". '
+            "For local runs, keep it in your ignored .env file."
+        )
+        st.stop()
+        raise
     except Exception as exc:
         st.error("GuardianAI could not complete the response.")
         with st.expander("Technical details"):
@@ -200,3 +194,7 @@ if user_input:
 
     if st.session_state.resolution_attempts >= 3:
         st.info('If you are safe now, tell me "I am safe" so I can close the session.')
+
+
+if __name__ == "__main__":
+    render_app()

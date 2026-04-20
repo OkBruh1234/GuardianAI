@@ -28,7 +28,8 @@ GuardianAI is a Streamlit-based crisis support assistant that routes a user's me
 ```text
 GuardianAI/
 ├── guardian_app.py          # Streamlit chat UI
-├── guardian_logic.py        # Agent setup, routing, severity, and response logic
+├── guardian_core.py         # Agent setup, routing, severity, and response logic
+├── guardian_logic.py        # Backward-compatible Streamlit Cloud entrypoint
 ├── guardian_resources.json  # Emergency helplines and recommended steps
 ├── requirements.txt         # Streamlit Cloud dependencies
 └── pyrightconfig.json       # Local editor/Pylance settings
@@ -68,6 +69,8 @@ Set the app entry point to:
 ```text
 guardian_app.py
 ```
+
+Older deployments may still point to `guardian_logic.py`; this repository keeps that path working, but `guardian_app.py` is the preferred Streamlit entrypoint.
 
 Add this in Streamlit Cloud secrets:
 
