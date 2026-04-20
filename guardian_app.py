@@ -13,6 +13,7 @@ except ImportError as exc:
     st.info("Check that requirements.txt is committed and Streamlit Cloud finished installing it.")
     st.code(str(exc))
     st.stop()
+    raise
 except RuntimeError as exc:
     st.error(str(exc))
     st.info(
@@ -20,6 +21,7 @@ except RuntimeError as exc:
         "For local runs, keep it in your ignored .env file."
     )
     st.stop()
+    raise
 
 
 RESOLUTION_KEYWORDS = [
@@ -165,6 +167,7 @@ if user_input:
         with st.expander("Technical details"):
             st.code(str(exc))
         st.stop()
+        raise
 
     st.session_state.last_result = result
 

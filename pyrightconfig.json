@@ -1,0 +1,17 @@
+{
+    "include": [
+        "guardian_app.py",
+        "guardian_logic.py"
+    ],
+    "exclude": [
+        ".git",
+        ".github",
+        ".venv",
+        "GuardianAI",
+        "__pycache__"
+    ],
+    "venvPath": ".",
+    "venv": ".venv",
+    "pythonVersion": "3.13",
+    "typeCheckingMode": "basic"
+}
