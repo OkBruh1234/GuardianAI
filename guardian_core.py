@@ -251,7 +251,11 @@ def compute_severity(message, category):
     return "LOW"
 
 
-def explain_decision(category):
+def explain_decision(category, routing_source="keyword"):
+    if routing_source == "active_agent":
+        agent_name = AGENT_NAMES.get(category, "GuardianAI")
+        return f"Continuing the active {agent_name} support session."
+
     reasons = {
         "fire": "Fire, smoke, gas, or burning-related keywords were detected.",
         "medical": "Urgent medical symptoms or injury keywords were detected.",
@@ -260,6 +264,18 @@ def explain_decision(category):
     }
 
     return reasons.get(category, "No specialized crisis keywords were detected.")
+
+
+def select_category(message, forced_agent=None):
+    detected_category = detect_category(message)
+
+    if detected_category in SPECIALIZED_CATEGORIES:
+        return detected_category, "keyword"
+
+    if forced_agent in SPECIALIZED_CATEGORIES:
+        return forced_agent, "active_agent"
+
+    return detected_category, "keyword"
 
 
 def build_help_text(resources, category):
@@ -336,9 +352,9 @@ async def handle_message(
     user_id=USER_ID,
 ):
     resources = load_crisis_resources()
-    category = forced_agent if forced_agent in SPECIALIZED_CATEGORIES else detect_category(message)
+    category, routing_source = select_category(message, forced_agent)
     severity = compute_severity(message, category)
-    reason = explain_decision(category)
+    reason = explain_decision(category, routing_source)
     runner_to_use = get_runner(category)
     agent_name = AGENT_NAMES.get(category, "GuardianAI")
 

@@ -16,6 +16,7 @@ RESOLUTION_KEYWORDS = [
 ]
 
 QUICK_PROMPTS = {
+    "GuardianAI": "I need general safety guidance.",
     "Fire": "There is fire or smoke near me.",
     "Medical": "Someone needs urgent medical help.",
     "Threat": "I feel unsafe and someone may be threatening me.",

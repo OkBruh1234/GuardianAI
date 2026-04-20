@@ -6,9 +6,11 @@ GuardianAI is a Streamlit-based crisis support assistant that routes a user's me
 
 ## What It Does
 
-- Detects crisis category from a user's message.
+- Starts from general GuardianAI support.
+- Detects crisis category from each new user message.
+- Routes to a specialized agent when crisis keywords appear.
+- Re-checks every turn, so a different specialist can take over if the situation changes.
 - Estimates severity as `LOW`, `MODERATE`, or `CRITICAL`.
-- Routes to a specialized agent when the situation is clear.
 - Adds practical emergency steps from `guardian_resources.json`.
 - Keeps a short active support session, then returns to general GuardianAI assistance.
 - Supports Streamlit Cloud secrets for safe API key handling.
@@ -17,22 +19,22 @@ GuardianAI is a Streamlit-based crisis support assistant that routes a user's me
 
 | Situation | Routed Agent | Example Triggers |
 | --- | --- | --- |
+| General support | `GuardianAI` | fallback support |
 | Fire or smoke | `FireAgent` | fire, smoke, gas leak, flames |
 | Medical emergency | `MedicalAgent` | bleeding, overdose, chest pain, unconscious |
 | Personal safety threat | `ThreatAgent` | following me, break-in, weapon, unsafe |
 | Panic or distress | `EmotionalSupportAgent` | panic, anxious, overwhelmed, self-harm |
-| Unknown/general | `GuardianAI` | fallback support |
 
 ## Project Structure
 
 ```text
 GuardianAI/
-├── guardian_app.py          # Streamlit chat UI
-├── guardian_core.py         # Agent setup, routing, severity, and response logic
-├── guardian_logic.py        # Backward-compatible Streamlit Cloud entrypoint
-├── guardian_resources.json  # Emergency helplines and recommended steps
-├── requirements.txt         # Streamlit Cloud dependencies
-└── pyrightconfig.json       # Local editor/Pylance settings
+|-- guardian_app.py          # Streamlit chat UI
+|-- guardian_core.py         # Agent setup, routing, severity, and response logic
+|-- guardian_logic.py        # Backward-compatible Streamlit Cloud entrypoint
+|-- guardian_resources.json  # Emergency helplines and recommended steps
+|-- requirements.txt         # Streamlit Cloud dependencies
+`-- pyrightconfig.json       # Local editor/Pylance settings
 ```
 
 ## Local Setup
@@ -85,7 +87,7 @@ After pushing changes to GitHub, Streamlit Cloud should redeploy automatically. 
 Useful checks before pushing:
 
 ```powershell
-python -m py_compile guardian_app.py guardian_logic.py
+python -m py_compile guardian_app.py guardian_core.py guardian_logic.py
 python -m json.tool guardian_resources.json
 ```
 
